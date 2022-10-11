@@ -1,0 +1,22 @@
+string name # Name of accessed mesh
+# Values only for initialization
+string init_file # Location of mesh file
+string init_shape # 'cube', 'sphere', 'cylinder', 'cone'
+float32[3] init_size # Shape: x,y,z [m], Mesh: scale,_,_ [-]
+string init_collision # 'true', 'false', ''
+# Values for initialization and editing the object
+geometry_msgs/Pose pose # Pose of mesh
+string color # 'r', 'g', 'b', 'c', 'm', 'y', 'k'
+float32 friction
+string frame_id
+float32 mass # kg
+float32[9] inertia
+# the new inertia matrix or tensor (9 values), expressed relative to transformationMatrix (which should coincide with the center of mass). The matrix should be symmetric.
+float32[12] inertiaTransformation
+#inertiaTransformation: a transformation matrix (12 values) expressed relative to the shape's reference frame. The matrix indicates the center of mass of the shape, and is the frame relative to which inertiaMatrix is expressed.
+string dynamic # 'true', 'false', ''
+string pub_info # 'true', 'false', ''
+string texture_file # inside <pkg>/include/textures, supported formats JPEG,PNG,TGA,BMP,TIFF,GIF
+string object_state # 'opened', 'closed', ''
+---
+bool success

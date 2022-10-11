@@ -1,0 +1,5 @@
+string name # Name of line
+geometry_msgs/Polygon points
+
+---
+bool success

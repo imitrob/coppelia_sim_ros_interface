@@ -1,0 +1,8 @@
+<launch>
+  <include file="$(find coppelia_sim_ros_interface)/launch/coppelia_sim.launch">
+    <arg name="gripper" default="franka_hand" />
+    <arg name="ik_solver" default="pyrep" />
+  </include>
+
+  <node pkg="coppelia_sim_ros_interface" name="coppelia_sim_ros_example" type="coppelia_sim_ros_example.py" output="screen"/>
+</launch>
