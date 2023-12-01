@@ -12,8 +12,8 @@ string frame_id
 float32 mass # kg
 float32[9] inertia
 # the new inertia matrix or tensor (9 values), expressed relative to transformationMatrix (which should coincide with the center of mass). The matrix should be symmetric.
-float32[12] inertiaTransformation
-#inertiaTransformation: a transformation matrix (12 values) expressed relative to the shape's reference frame. The matrix indicates the center of mass of the shape, and is the frame relative to which inertiaMatrix is expressed.
+float32[12] inertia_transformation
+#inertia_transformation: a transformation matrix (12 values) expressed relative to the shape's reference frame. The matrix indicates the center of mass of the shape, and is the frame relative to which inertiaMatrix is expressed.
 string dynamic # 'true', 'false', ''
 string pub_info # 'true', 'false', ''
 string texture_file # inside <pkg>/include/textures, supported formats JPEG,PNG,TGA,BMP,TIFF,GIF

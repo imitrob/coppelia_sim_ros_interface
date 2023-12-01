@@ -1,8 +1,10 @@
 # Coppelia Sim ROS Interface
 
-Package build on top of _CoppeliaSim_ simulator using mostly [PyRep](https://github.com/stepjam/PyRep) package to communicate with the simulator. Enables control of a simulator via ROS messages and services.
+Package build on top of _CoppeliaSim_ simulator using mostly [PyRep](https://github.com/stepjam/PyRep) package to communicate with the simulator. Enables control of a simulator via ROS2 messages and services.
 
 Package provides possibility to manage scene objects and robot control.
+
+Tested version: Ubuntu 20.04, ROS2 Galactic, CoppeliaSim 4.1.0 Edu.
 
 ##### Diagram of the nodes in package:
 
@@ -48,18 +50,12 @@ I --> CSRE
 
 ## Installation
 
-If you use Teleoperation gesture toolbox, use installation there, otherwise:
-
-1. Install CoppeliaSim
-2. Install PyRep
-3. Download this package into ROS workspace
-4. Install conda packages based on `environment.yml` file.
+Install alongside [teleop_gesture_toolbox](https://github.com/imitrob/teleop_gesture_toolbox).
 
 ## Usage:
 
-- Example launch server & client.
 
-1. Run _CoppeliaSim_ example without ROS.
+1. Check if _CoppeliaSim_ running correctly without ROS2, run given example:
 
 ```
 cd <coppelia_sim_ros_interface>/examples
@@ -68,39 +64,24 @@ python coppelia_sim_example.py
 
 2. Run _CoppeliaSim_ example with ROS.
 
+  1. Terminal: Server
 ```
-roslaunch coppelia_sim_ros_interface example.launch
+cd <coppelia_sim_ros_interface>/<coppelia_sim_ros_interface>
+python coppelia_sim_ros_server.py
 ```
 
-- Launch only server
-- Using your own script
+  2. Terminal: Client
+```
+cd <coppelia_sim_ros_interface>/examples
+python coppelia_sim_ros_example.py
+```
 
-```
-roslaunch coppelia_sim_ros_interface coppelia_sim.launch
-```
 
 Example Python function that can be used to communicate with interface are in [lib file](src/coppelia_sim_ros_client.py).
-
-Use-case can be found in `coppelia_sim_ros_example.py`
 
 ## Interface via ROS:
 
 
-### Robot control
-
-##### Message
-
-1. (_ROSparam_) IK_solver: `'pyrep'`
-
-Publish on `/pose_eef` type _Pose_ to move robot target based on pose control. Recommended.
-
-2. (_ROSparam_) IK_solver: `'relaxed_ik'`
-
-Publish on `/relaxed_ik/joint_angle_solutions` type _JointAngles_ for joints control. _JointAngles_ type message can be found in [file](msg/JointAngles.msg).
-
-3. (_ROSparam_) IK_solver: `'custom'`
-
-Publish on topic described by (_ROSparam_) `/mirracle_config/ik_topic` type _JointAngles_.
 
 ### Camera images
 
@@ -108,8 +89,8 @@ Publish on topic described by (_ROSparam_) `/mirracle_config/ik_topic` type _Joi
 
 Subscribe on `/coppelia/left_camera` and `/coppelia/right_camera` to receive Camera Images type `Image`.
 
-To view camera image, `image_view` can be used with command:
-`rosrun image_view image_view image:=/coppelia/left_camera`
+To view camera image, `rqt_image_view` can be used with command:
+`ros2 run rqt_image_view rqt_image_view /coppelia/left_camera`
 
 Call service `/add_or_edit_object` with argument `name='camera'` and argument `pub_info='true'`. (Template function in [lib](src/coppelia_sim_ros_client.py))
 

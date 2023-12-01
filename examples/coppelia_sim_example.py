@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 ''' Example showcase of PyRep and Panda Robot without ROS
+Updated & tested for Python3.9
 '''
 import numpy as np
 from pyrep import PyRep
@@ -9,50 +10,48 @@ from pyrep.robots.arms.panda import Panda
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 from pyrep.errors import ConfigurationPathError
 
-import os
+import os, time
 # Load Scenes/Textures directory
 SCENES='/'.join(os.path.realpath(__file__).split('/')[:-2])+str('/include/scenes/')
 TEXTURES='/'.join(os.path.realpath(__file__).split('/')[:-2])+str('/include/textures/')
 
 pr = PyRep()
 # Launch the application with a scene file in headless mode
-pr.launch(SCENES+'scene_panda_franka_gripper.ttt', headless=False, responsive_ui=True)
+pr.launch(SCENES+'scene_panda_gripper_cbgo.ttt', headless=False, responsive_ui=True)
+''' For ipykernel notebook, when __file__ is None
+>>> pr.launch('/home/<user>/<your ws>/src/coppelia_sim_ros_interface/include/scenes/scene_panda_gripper_cbgo.ttt', headless=False, responsive_ui=True)
+'''
 pr.start()  # Start the simulation
 pr.step()
 
 panda = Panda()  # Get the panda from the scene
 gripper = PandaGripper()  # Get the panda gripper from the scene
 
-velocities = [.1, .2, .3, .4, .5, .6, .7]
-panda.set_joint_target_velocities(velocities)
-panda.set_joint_positions([0.,0.,0.,-np.pi/2,0.,np.pi/3,np.pi])
-
-
-panda.set_joint_target_positions([0.,0.,0.,0.,0.,0.,0.])
-for i in range(200):
-
-    pr.step() # simulate behaviour
-
-panda.set_joint_positions([0.,0.,0.,0.,0.,0.,0.])
-
-for i in range(200):
-    pr.step() # simulate behaviour
-
-panda.get_joint_count()
-panda.get_joint_forces()
-panda.get_joint_modes()
-[panda.joints[j].is_motor_enabled() for j in range(7)]
-panda.joints[0].set_joint_target_position(1.)
-panda.set_joint_target_velocities([0.2,0.02,0.02,0.02,0.02,0.02,0.02])
-panda.set_joint_target_positions([0.,-np.pi/4,0.,-np.pi/2,0.,np.pi/3,np.pi])
-
-
-
-for i in range(200):
-    pr.step() # simulate behaviour
-
-
 input("Example started! Press any button to proceed")
+input(">> Target Robot Joints control!")
+
+panda.set_joint_positions([0.,0.,0.,-np.pi/2,0.,np.pi/3,np.pi])
+for i in range(40):
+    pr.step() # simulate behaviour
+
+print("Info:")
+print(f"Number of joints: {panda.get_joint_count()}")
+print(f"Joint forces: {panda.get_joint_forces()}")
+print(f"Joint modes: {panda.get_joint_modes()}")
+print(f"Is Panda in collision: {panda.check_arm_collision()}")
+print(f"Joints enabled: {[panda.joints[j].is_motor_enabled() for j in range(7)]}")
+
+input(">> Velocity control!")
+
+panda.set_control_loop_enabled(False)
+panda.set_joint_target_velocities([2,0.,0.,0.,0.,0.,0.])
+for i in range(40):
+    pr.step() # simulate behaviour
+panda.set_joint_target_velocities([-2,0.,0.,0.,0.,0.,0.])
+for i in range(40):
+    pr.step() # simulate behaviour
+panda.set_control_loop_enabled(True)
+
 input(">> Add some objects to scene")
 colors = [[1.,0.,0.], [0.,1.,0.], [0.,0.,1.]]
 positions = [[0.3, 0.3, 0.1], [-0.5, -0.3, 0.1], [0.2, -0.3, 0.1]]
@@ -66,13 +65,20 @@ for i in range(20):
     pr.step() # simulate behaviour
 
 input(">> Move the gripper")
-
-done = False
-# Open the gripper halfway at a velocity of 0.04.
-while not done:
-    done = gripper.actuate(0.0, velocity=0.04)
-    pr.step()
-
+def move_gripper(pos):
+    done = False
+    while not done:
+        gripper.actuate(pos, velocity=0.4)
+        for i in range(10):
+            pr.step() # simulate behaviour
+        done = gripper.actuate(pos, velocity=0.4)
+        for i in range(10):
+            pr.step() # simulate behaviour
+        print(f"done?: {done}")
+print("Opening the gripper")
+move_gripper(pos=1.0)
+print("Closing the gripper")
+move_gripper(pos=0.0)
 
 input(">> Control Panda via IK")
 DELTA = 0.01
@@ -85,11 +91,21 @@ def move(index, delta):
     panda.set_joint_target_positions(new_joint_angles)
     pr.step()
 
-[move(2, DELTA) for _ in range(10)]
-[move(2, -DELTA) for _ in range(10)]
-[move(1, -DELTA) for _ in range(10)]
-[move(2, DELTA) for _ in range(10)]
-[move(1, DELTA) for _ in range(10)]
+
+
+panda.get_joint_positions()
+panda.set_joint_target_positions([-2.23, 0.26, 2.44, -2.48, -0.20, 2.18, 1.13])
+panda.set_joint_target_positions([0.,0.,0.,-np.pi/2,0.,np.pi/3,np.pi])
+
+[move(0, -DELTA) for _ in range(10)]
+try:
+    [move(2, DELTA) for _ in range(10)]
+    [move(2, -DELTA) for _ in range(10)]
+    [move(1, -DELTA) for _ in range(10)]
+    [move(2, DELTA) for _ in range(10)]
+    [move(1, DELTA) for _ in range(10)]
+except:
+    print("[Error] Solving jacobian failed")
 
 input(">> Reach the targets with panda")
 # We could have made this target in the scene, but lets create one dynamically
@@ -132,6 +148,9 @@ for i in range(LOOPS):
 input(">> Add object and set the texture")
 
 object = Shape.create(type=PrimitiveShape.CUBOID, size=[0.5, 0.5, 0.5], position=[1.0,0.0,0.5], orientation=[0.,0.,0.])
+''' For ipykernel notebook, when __file__ is None
+>>> shape1,texture1 = pr.create_texture(filename='/home/<user>/<your ws>/src/coppelia_sim_ros_interface/include/textures/wood.jpg')
+'''
 shape1,texture1 = pr.create_texture(filename=TEXTURES+'wood.jpg')
 object.set_texture(texture=texture1, mapping_mode=TextureMappingMode.CUBE, repeat_along_u=True, repeat_along_v=True)
 

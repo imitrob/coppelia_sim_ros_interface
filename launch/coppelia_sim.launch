@@ -1,47 +1,19 @@
 <launch>
-  <!-- Control CoppeliaSim through services/topics -->
-
-  <arg name="ik_solver" default="pyrep" /> <!-- 'relaxed_ik'/'pyrep' -->
-  <arg name="robot" default="panda" /> <!-- 'panda'/('iiwa' not tested) -->
-  <arg name="gripper" default="franka_hand" /> <!-- 'none'/'franka_hand'/'franka_hand_with_camera'-->
-
-  <arg name="ik_topic" default="" /> <!-- Custom IK topic name used, if ik_solver is set to custom solver-->
-  <arg name="/mirracle_config/pyrep_control_type" default="" />
-
-  <arg name="scene_file_none" default="scene_panda.ttt" />
-  <arg name="scene_file_franka_hand" default="scene_panda_franka_gripper_drawers.ttt" />
-  <arg name="scene_file_franka_hand_with_camera" default="scene_panda_custom_gripper.ttt" />
-
-  <!-- Probably do not change below -->
-  <!-- ############################ -->
-  <param name="mirracle_config/robot" type="str" value="$(arg robot)" />
-  <param name="mirracle_config/gripper" type="str" value="$(arg gripper)" />
-  <param name="mirracle_config/ik_solver" type="str" value="$(arg ik_solver)" />
-  <param name="mirracle_config/ik_topic" type="str" value="(arg ik_topic)" />
-
-  <param name="/mirracle_config/pyrep_control_type" type="str" value="(arg pyrep_control_type)" />
-
-  <group if="$(eval arg('gripper') == 'none')">
-    <arg name="config_file_name" value="relaxedIK.config" />
-    <param name="config_file_name" value="$(arg config_file_name)"/>
-    <param name="/mirracle_config/config_file_scene" value="$(arg scene_file_none)" />
-  </group>
-  <group if="$(eval arg('gripper') == 'franka_hand')">
-    <arg name="config_file_name" value="relaxedIK_panda_gripper_withhandjoint.config" />
-    <param name="config_file_name" value="$(arg config_file_name)"/>
-    <param name="/mirracle_config/config_file_scene" value="$(arg scene_file_franka_hand)" />
-  </group>
-  <group if="$(eval arg('gripper') == 'franka_hand_with_camera')">
-    <arg name="config_file_name" value="relaxedIK_custom_gripper_withjointhand.config" />
-    <param name="config_file_name" value="$(arg config_file_name)"/>
-    <param name="/mirracle_config/config_file_scene" value="$(arg scene_file_franka_hand_with_camera)" />
-  </group>
-  <include file="$(find coppelia_sim_ros_interface)/launch/coppelia_ros.launch" />
-  <node pkg="coppelia_sim_ros_interface" name="coppelia_sim_ros_server" type="coppelia_sim_ros_server.py" output="screen"/>
-
-  <!-- There will be pick to three .config files no gripper/gripper/custom gripper -->
-  <group if="$(eval arg('ik_solver') == 'relaxed_ik')">
+  <!--
+  ik_solver - 'relaxed_ik'/'pyrep'
+  ik_topic - Custom IK topic name used, if ik_solver is set to custom solver
+  pyrep_control_type
+  -->
+  <node pkg="coppelia_sim_ros_interface" exec="coppelia_sim_ros_server.py">
+    <param name="project_config/ik_solver" value="pyrep"/>
+    <param name="project_config/ik_topic" value="" />
+    <param name="/project_config/config_file_scene" value="scene_panda_gripper_cbgo.ttt" />
+    <!-- if cameras in scene -->
+    <param name="/coppelia/image_publish_freq" value="2" />
+    <param name="/coppelia/object_publish_freq" value="2" />
+  </node>
+  <!--<group if="$(eval arg('ik_solver') == 'relaxed_ik')">
     <node pkg="relaxed_ik" type="relaxed_ik_node.py" name="relaxed_ik_node" output="screen"/>
-  </group>
+  </group>-->
 
 </launch>
